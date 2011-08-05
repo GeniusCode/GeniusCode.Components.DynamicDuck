@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Reflection;
+
+namespace GeniusCode.Components.Extensions
+{
+    public static class ReflectionExtensions
+    {
+        public static bool IsVoidReturnType(this MethodInfo methodInfo)
+        {
+            return methodInfo.ReturnType == typeof(void);
+        }
+
+        public static bool HasAttribute<TAttribute>(this Type input, bool includeInheritance = false)
+where TAttribute : Attribute
+        {
+            return GetAttribute<TAttribute>(input, includeInheritance) != null;
+        }
+        public static TAttribute GetAttribute<TAttribute>(this Type input, bool includeInheritance = false) where TAttribute : Attribute
+        {
+            var attribute = input.GetCustomAttributes<TAttribute>(includeInheritance).SingleOrDefault();
+            return attribute;
+        }
+
+        public static List<T> GetCustomAttributes<T>(this MemberInfo input, bool includeInheritance = false)
+            where T : Attribute
+        {
+            return input.GetCustomAttributes(typeof(T), includeInheritance).Cast<T>().ToList(); //.ConvertToList<T>();
+        }
+
+        public static IEnumerable<MethodInfo> WhereExplicitMethodDefinitions(this MethodInfo[] infos)
+        {
+            string[] prefixes = {
+	                                "get_",
+	                                "set_",
+	                                "add_",
+	                                "remove_"
+	                                };
+            return infos.Where(x => !x.Name.ContainsAnyWords(prefixes));
+        }
+
+    }
+}
