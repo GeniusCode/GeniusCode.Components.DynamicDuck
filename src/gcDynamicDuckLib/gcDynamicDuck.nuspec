@@ -25,6 +25,5 @@
 	<file src="gcDynamicDuckLib.Tests\bin\Release\gcDynamicDuck.dll" target="lib\net40\gcDynamicDuck.dll" />
     <file src="gcDynamicDuckLib.Tests\bin\Release\gcReflectionInteractionProvider.dll" target="lib\net40\gcReflectionInteractionProvider.dll" />
     <file src="gcDynamicDuckLib.Tests\bin\Release\gcLateBindingDynamicProvider.dll" target="lib\net40\gcLateBindingDynamicProvider.dll" />   
-    <file src="DynamicDuckLib.Tests.Sl\Bin\Release\gc*.dll" target="lib\sl40\" />
   </files>
 </package>  
