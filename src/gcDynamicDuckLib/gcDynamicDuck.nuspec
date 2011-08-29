@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>gcDynamicDuck</id>
+    <version>1.1</version>
+    <title>Dynamic Duck</title>
+    <authors>JeremiahRedekop,Ryan D Hatch</authors>
+    <owners>GeniusCode,LLC</owners>
+    <projectUrl>https://github.com/GeniusCode/GeniusCode.Components.DynamicDuck</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Library for ducking objects at runtime against an interface using a proxy generated in a dynamic library. 
+	
+	DynamicInteractionProviders are used by the proxy to interact with the underlying object, allowing for methods such as: 
+	-reflection 
+	-latebinding (COM) 
+	-dictionary (expando) 
+	
+	Silverlight 4 and .net 3.5 are supported.</description>
+    <summary>Libary for ducking objects to an interface using a generated proxy class in a dynamic library, and a interaction provider.</summary>
+    <tags>silverlight, dotnet3.5, dotnet4.0, proxy, duck, dynamic, msil</tags>
+  </metadata>
+  <files>
+    <file src="gcDynamicDuckLib.Tests\bin\Release\gcDynamicDuck.dll" target="lib\net35\gcDynamicDuck.dll" />
+    <file src="gcDynamicDuckLib.Tests\bin\Release\gcReflectionInteractionProvider.dll" target="lib\net35\gcReflectionInteractionProvider.dll" />
+	<file src="gcDynamicDuckLib.Tests\bin\Release\gcDynamicDuck.dll" target="lib\net40\gcDynamicDuck.dll" />
+    <file src="gcDynamicDuckLib.Tests\bin\Release\gcReflectionInteractionProvider.dll" target="lib\net40\gcReflectionInteractionProvider.dll" />
+    <file src="gcDynamicDuckLib.Tests\bin\Release\gcLateBindingDynamicProvider.dll" target="lib\net40\gcLateBindingDynamicProvider.dll" />   
+    <file src="DynamicDuckLib.Tests.Sl\Bin\Release\gc*.dll" target="lib\sl40\" />
+  </files>
+</package>  
