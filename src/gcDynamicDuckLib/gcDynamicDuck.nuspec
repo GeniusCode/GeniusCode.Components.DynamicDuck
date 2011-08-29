@@ -17,7 +17,7 @@
 	
 	Silverlight 4 and .net 3.5 are supported.</description>
     <summary>Libary for ducking objects to an interface using a generated proxy class in a dynamic library, and a interaction provider.</summary>
-    <tags>silverlight, dotnet3.5, dotnet4.0, proxy, duck, dynamic, msil</tags>
+    <tags>silverlight dotnet3.5 dotnet4.0 proxy duck dynamic msil</tags>
   </metadata>
   <files>
     <file src="gcDynamicDuckLib.Tests\bin\Release\gcDynamicDuck.dll" target="lib\net35\gcDynamicDuck.dll" />
