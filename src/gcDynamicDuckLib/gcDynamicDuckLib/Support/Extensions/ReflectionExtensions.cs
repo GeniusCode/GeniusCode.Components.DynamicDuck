@@ -13,21 +13,21 @@ namespace GeniusCode.Components.Extensions
             return methodInfo.ReturnType == typeof(void);
         }
 
-        public static bool HasAttribute<TAttribute>(this Type input, bool includeInheritance = false)
+        public static bool HasAttribute<TAttribute>(this Type input, bool includeInheritance)
 where TAttribute : Attribute
         {
             return GetAttribute<TAttribute>(input, includeInheritance) != null;
         }
-        public static TAttribute GetAttribute<TAttribute>(this Type input, bool includeInheritance = false) where TAttribute : Attribute
+        public static TAttribute GetAttribute<TAttribute>(this Type input, bool includeInheritance) where TAttribute : Attribute
         {
             var attribute = input.GetCustomAttributes<TAttribute>(includeInheritance).SingleOrDefault();
             return attribute;
         }
 
-        public static List<T> GetCustomAttributes<T>(this MemberInfo input, bool includeInheritance = false)
+        public static List<T> GetCustomAttributes<T>(this MemberInfo input, bool includeInheritance)
             where T : Attribute
         {
-            return input.GetCustomAttributes(typeof(T), includeInheritance).Cast<T>().ToList(); //.ConvertToList<T>();
+            return input.GetCustomAttributes(typeof(T), includeInheritance).Cast<T>().ToList(); 
         }
 
         public static IEnumerable<MethodInfo> WhereExplicitMethodDefinitions(this MethodInfo[] infos)
