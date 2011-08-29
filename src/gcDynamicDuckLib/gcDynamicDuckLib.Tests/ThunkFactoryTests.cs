@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Dynamic;
 using GeniusCode.Components.DynamicDuck;
 using GeniusCode.Components.DynamicDuck.Providers;
+using GeniusCode.Components.DynamicDuck.Support;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace gcDynamicDuckLib.Tests

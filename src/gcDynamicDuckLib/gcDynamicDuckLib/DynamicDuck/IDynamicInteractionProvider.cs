@@ -3,13 +3,6 @@ using System.Reflection;
 
 namespace GeniusCode.Components.DynamicDuck
 {
-    public class MethodCallSiteInfo
-    {
-        public object Target { get; set; }
-        public string MethodName { get; set; }
-        public IArgInfo[] Args { get; set; }
-    }
-
     /// <summary>
     /// Provider that supports ducking (treating an existing object as though it implements an interface)
     /// </summary>

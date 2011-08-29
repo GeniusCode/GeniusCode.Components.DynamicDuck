@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using GeniusCode.Components.DynamicDuck.Support;
 
-namespace GeniusCode.Components.DynamicDuck
+namespace GeniusCode.Components.DynamicDuck.Support
 {
 
-    
+
 
     /// <summary>
     /// Base class for dynamic objects.
@@ -20,6 +19,7 @@ namespace GeniusCode.Components.DynamicDuck
         /// Creates a new dynamic object wrapping the specified <paramref name="target">target object</paramref>.
         /// </summary>
         /// <param name="target">Wrapped target object.</param>
+        /// <param name="provider"></param>
         protected DynamicProxyBase(object target, IDynamicInteractionProvider provider)
         {
             Target = target;
@@ -37,10 +37,7 @@ namespace GeniusCode.Components.DynamicDuck
         {
             var dynamic = obj as DynamicProxyBase;
 
-            if (dynamic == null)
-                return false;
-
-            return object.ReferenceEquals(dynamic.Target, this.Target);
+            return dynamic != null && ReferenceEquals(dynamic.Target, Target);
         }
 
         /// <summary>
@@ -79,21 +76,21 @@ namespace GeniusCode.Components.DynamicDuck
 
         protected void SetProperty<T>(string member, T val)
         {
-            Provider.PerformPropertySet<T>(val, Target, member);
+            Provider.PerformPropertySet(val, Target, member);
         }
 
         protected void SetDefaultValueWithoutFunc<T>(string member)
         {
-            SetDefaultValue<T>(member, default(T));
+            SetDefaultValue(member, default(T));
         }
         protected void SetDefaultValueUsingFunc<T>(string member, Func<string, object> valueGetter)
         {
-            Provider.SetDefaultValue<T>((T)valueGetter(member), Target, member);
+            Provider.SetDefaultValue((T)valueGetter(member), Target, member);
         }
 
         private void SetDefaultValue<T>(string member, T value)
         {
-            Provider.SetDefaultValue<T>(value, Target, member);
+            Provider.SetDefaultValue(value, Target, member);
         }
 
         internal void SetDefaultValues(Func<string, object> valueGetter)
@@ -108,13 +105,13 @@ namespace GeniusCode.Components.DynamicDuck
         protected void InvokeVoidMethod(string methodName, params IArgInfo[] args)
         {
             args = args ?? new IArgInfo[] { };
-            Provider.InvokeVoidMethod(new MethodCallSiteInfo() { Target = Target, Args = args, MethodName = methodName });
+            Provider.InvokeVoidMethod(new MethodCallSiteInfo { Target = Target, Args = args, MethodName = methodName });
         }
 
         protected T InvokeReturnMethod<T>(string methodName, params IArgInfo[] args)
         {
             args = args ?? new IArgInfo[] { };
-            return Provider.InvokeReturnMethod<T>(new MethodCallSiteInfo() { Target = Target, Args = args, MethodName = methodName });
+            return Provider.InvokeReturnMethod<T>(new MethodCallSiteInfo { Target = Target, Args = args, MethodName = methodName });
         }
 
         protected void AddHandler<T>(string name, Delegate handler)

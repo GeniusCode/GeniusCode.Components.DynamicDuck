@@ -46,7 +46,7 @@ namespace GeniusCode.Components.DynamicDuck.Providers
                 .TryAs<Delegate>(del => del.DynamicInvoke(args)));
         }
 
-        protected override bool Calculate_ShouldSetDefaultValue<T>(T value, object target, string propertyName)
+        protected override bool CalculateShouldSetDefaultValue<T>(T value, object target, string propertyName)
         {
             bool result = true; //default is to set
             target.TryAs<IDictionary<string, object>>(d => result = !d.Keys.Contains(propertyName));

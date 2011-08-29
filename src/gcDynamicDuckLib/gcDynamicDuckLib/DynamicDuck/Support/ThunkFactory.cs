@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using GeniusCode.Components.DynamicDuck.Support.Extensions;
 using GeniusCode.Components.Extensions;
 
-
-namespace GeniusCode.Components.DynamicDuck
+namespace GeniusCode.Components.DynamicDuck.Support
 {
     public class ThunkFactory<TProvider> : ThunkFactory
         where TProvider : IDynamicInteractionProvider, new()
@@ -30,23 +30,24 @@ namespace GeniusCode.Components.DynamicDuck
     /// </summary>
     public class ThunkFactory
     {
-        NestedDictionary<Type, string, object> defaultValues = new NestedDictionary<Type, string, object>();
-        Dictionary<Type, Type> Thunks = new Dictionary<Type, Type>();
+        readonly NestedDictionary<Type, string, object> _defaultValues = new NestedDictionary<Type, string, object>();
+        readonly Dictionary<Type, Type> _thunks = new Dictionary<Type, Type>();
 
 
-        private IDynamicInteractionProvider _Provider;
+        private readonly IDynamicInteractionProvider _provider;
 
         public int GenerateCount { get; private set; }
 
-        protected virtual bool Calculate_ShouldImplementExplicitly(MemberInfo member)
+        protected virtual bool CalculateShouldImplementExplicitly(MemberInfo member)
         {
-            bool result = true;
-            if (!member.TryAs<PropertyInfo>(p => result = _Mode == ImplementMode.AllExplicit))
-                member.TryAs<MethodInfo>(m => result = _Mode == ImplementMode.PropertiesImplicit || _Mode == ImplementMode.AllExplicit);
+            var result = true;
+            if (!member.TryAs<PropertyInfo>(p => result = _mode == ImplementMode.AllExplicit))
+                member.TryAs<MethodInfo>(m => result = _mode == ImplementMode.PropertiesImplicit || _mode == ImplementMode.AllExplicit);
 
             return result;
         }
-        ImplementMode _Mode;
+
+        readonly ImplementMode _mode;
         #region Constuctors
 
         public ThunkFactory(IDynamicInteractionProvider provider)
@@ -55,32 +56,32 @@ namespace GeniusCode.Components.DynamicDuck
         }
         public ThunkFactory(IDynamicInteractionProvider provider, ImplementMode mode)
         {
-            _Provider = provider;
-            _Mode = mode;
+            _provider = provider;
+            _mode = mode;
 
         }
         #endregion
 
         #region assets
 
-        static MethodInfo GetPropertyMethod = typeof(DynamicProxyBase).GetMethod("GetProperty", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo SetPropertyMethod = typeof(DynamicProxyBase).GetMethod("SetProperty", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodAttributes implicitImplementAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.SpecialName;
-        static MethodAttributes explicitImplementAttributes = MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final;
-        static MethodInfo GetInvokeVoidMethod = typeof(DynamicProxyBase).GetMethod("InvokeVoidMethod", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo OnSetDefaultValues = typeof(DynamicProxyBase).GetMethod("OnSetDefaultValues", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo SetDefaultValueUsingFunc = typeof(DynamicProxyBase).GetMethod("SetDefaultValueUsingFunc", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo SetDefaultValueWithoutFunc = typeof(DynamicProxyBase).GetMethod("SetDefaultValueWithoutFunc", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo GetInvokeReturnMethod = typeof(DynamicProxyBase).GetMethod("InvokeReturnMethod", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo GetArgInfoMethod = typeof(DynamicProxyBase).GetMethod("GetArgInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo AddHandlerMethod = typeof(DynamicProxyBase).GetMethod("AddHandler", BindingFlags.NonPublic | BindingFlags.Instance);
-        static MethodInfo RemoveHandlerMethod = typeof(DynamicProxyBase).GetMethod("RemoveHandler", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo GetPropertyMethod = typeof(DynamicProxyBase).GetMethod("GetProperty", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo SetPropertyMethod = typeof(DynamicProxyBase).GetMethod("SetProperty", BindingFlags.NonPublic | BindingFlags.Instance);
+        private const MethodAttributes ImplicitImplementAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.SpecialName;
+        private const MethodAttributes ExplicitImplementAttributes = MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final;
+        static readonly MethodInfo GetInvokeVoidMethod = typeof(DynamicProxyBase).GetMethod("InvokeVoidMethod", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo OnSetDefaultValues = typeof(DynamicProxyBase).GetMethod("OnSetDefaultValues", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo SetDefaultValueUsingFunc = typeof(DynamicProxyBase).GetMethod("SetDefaultValueUsingFunc", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo SetDefaultValueWithoutFunc = typeof(DynamicProxyBase).GetMethod("SetDefaultValueWithoutFunc", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo GetInvokeReturnMethod = typeof(DynamicProxyBase).GetMethod("InvokeReturnMethod", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo GetArgInfoMethod = typeof(DynamicProxyBase).GetMethod("GetArgInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo AddHandlerMethod = typeof(DynamicProxyBase).GetMethod("AddHandler", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly MethodInfo RemoveHandlerMethod = typeof(DynamicProxyBase).GetMethod("RemoveHandler", BindingFlags.NonPublic | BindingFlags.Instance);
         #endregion
         #region Public methods
 
         public T AsIfRewrap<T>(IDynamicProxy proxy, bool setDefaultValues) where T : class
         {
-            if (!Object.ReferenceEquals(proxy.Provider, this._Provider))
+            if (!ReferenceEquals(proxy.Provider, _provider))
                 throw new NotSupportedException("In order to rewrap, providers must be same object reference.");
 
             return AsIf<T>(proxy.Target, setDefaultValues);
@@ -91,14 +92,14 @@ namespace GeniusCode.Components.DynamicDuck
             var targetType = typeof(T);
             const string thunkTypeName = "<>__Thunks.Thunk";// +targetType.FullName;
 
-            Type thunkType = BuildThunkType(targetType, thunkTypeName);
+            var thunkType = BuildThunkType(targetType, thunkTypeName);
             GenerateCount++;
             return thunkType;
         }
 
         public Type GetThunkType<T>() where T : class
         {
-            return Thunks.CreateOrGetValue(typeof(T), () => NameModuleAndBuildThunkType<T>());
+            return _thunks.CreateOrGetValue(typeof(T), NameModuleAndBuildThunkType<T>);
         }
 
         /// <summary>
@@ -106,6 +107,7 @@ namespace GeniusCode.Components.DynamicDuck
         /// </summary>
         /// <typeparam name="T">Target type.</typeparam>
         /// <param name="target">Object to be wrapped.</param>
+        /// <param name="setDefaultValues"></param>
         /// <returns>Wrapper around the specified object.</returns>
         /// <exception cref="InvalidOperationException">Occurs when the specified target type is not an interface.</exception>
         /// <remarks>
@@ -113,16 +115,16 @@ namespace GeniusCode.Components.DynamicDuck
         /// </remarks>
         public T AsIf<T>(object target, bool setDefaultValues) where T : class
         {
-            Type thunkType = GetThunkType<T>();
+            var thunkType = GetThunkType<T>();
 
             //Create thunk instance            
-            T output = (T)Activator.CreateInstance(thunkType, target, this._Provider);
+            var output = (T)Activator.CreateInstance(thunkType, target, _provider);
 
             // set default values
             if (setDefaultValues)
-                output.TryAs<DynamicProxyBase>(pb => pb.SetDefaultValues((s) => defaultValues[typeof(T)][s]));
+                output.TryAs<DynamicProxyBase>(pb => pb.SetDefaultValues(s => _defaultValues[typeof(T)][s]));
 
-            _Provider.OnObjectWrapped<T>(output);
+            _provider.OnObjectWrapped(output);
 
             return output;
         }
@@ -132,16 +134,16 @@ namespace GeniusCode.Components.DynamicDuck
 
         private void PushDefaultValuesIntoDictionaryForType(Type targetType)
         {
-            Dictionary<string, object> newDict = new Dictionary<string, object>();
+            var newDict = new Dictionary<string, object>();
 
             var q = from t in GetPropertiesForDefaultValue(targetType)
                     let at = t.GetCustomAttributes<DefaultValueAttribute>(true).SingleOrDefault()
                     where at != null
-                    select new { t, Value = at.Value };
+                    select new { t, at.Value };
 
-            q.ToList().ForEach(a => newDict.Add(_Provider.GetQualifiedName(a.t), a.Value));
+            q.ToList().ForEach(a => newDict.Add(_provider.GetQualifiedName(a.t), a.Value));
 
-            defaultValues.Add(targetType, newDict);
+            _defaultValues.Add(targetType, newDict);
         }
 
         private IEnumerable<PropertyInfo> GetPropertiesForDefaultValue(Type targetType)
@@ -201,7 +203,7 @@ namespace GeniusCode.Components.DynamicDuck
 
         private void BuildDefaultValuesMethod(Type targetType, TypeBuilder typeBuilder)
         {
-            var methodBuilder = typeBuilder.DefineMethod("OnSetDefaultValues", MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof(void), new Type[] { typeof(Func<string, object>) });
+            var methodBuilder = typeBuilder.DefineMethod("OnSetDefaultValues", MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual, CallingConventions.HasThis, typeof(void), new[] { typeof(Func<string, object>) });
             typeBuilder.DefineMethodOverride(methodBuilder, OnSetDefaultValues);
 
             EmitDefaultValuesMethod(methodBuilder.GetILGenerator(), targetType);
@@ -211,14 +213,14 @@ namespace GeniusCode.Components.DynamicDuck
         {
             var properties = GetPropertiesForDefaultValue(targetType);
 
-            var myDict = defaultValues[targetType];
+            var myDict = _defaultValues[targetType];
 
             properties.ToList().ForEach(p =>
             {
                 g.Emit(OpCodes.Nop);
                 g.Emit(OpCodes.Ldarg_0);
-                g.Emit(OpCodes.Ldstr, _Provider.GetQualifiedName(p));
-                if (myDict.ContainsKey(_Provider.GetQualifiedName(p)))
+                g.Emit(OpCodes.Ldstr, _provider.GetQualifiedName(p));
+                if (myDict.ContainsKey(_provider.GetQualifiedName(p)))
                 {
                     g.Emit(OpCodes.Ldarg_1);
                     g.Emit(OpCodes.Call, SetDefaultValueUsingFunc.MakeGenericMethod(p.PropertyType));
@@ -242,12 +244,12 @@ namespace GeniusCode.Components.DynamicDuck
             // {
             // }
             //
-            ConstructorBuilder ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new Type[] { typeof(object), typeof(IDynamicInteractionProvider) });
-            ILGenerator ctorILGen = ctorBuilder.GetILGenerator();
+            var ctorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new[] { typeof(object), typeof(IDynamicInteractionProvider) });
+            var ctorILGen = ctorBuilder.GetILGenerator();
             ctorILGen.Emit(OpCodes.Ldarg_0);
             ctorILGen.Emit(OpCodes.Ldarg_1);
-            ctorILGen.Emit(OpCodes.Ldarg_2); //?
-            ctorILGen.Emit(OpCodes.Call, typeof(DynamicProxyBase).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(object), typeof(IDynamicInteractionProvider) }, null));
+            ctorILGen.Emit(OpCodes.Ldarg_2);
+            ctorILGen.Emit(OpCodes.Call, typeof(DynamicProxyBase).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(object), typeof(IDynamicInteractionProvider) }, null));
             ctorILGen.Emit(OpCodes.Ret);
         }
 
@@ -256,7 +258,6 @@ namespace GeniusCode.Components.DynamicDuck
         /// </summary>
         /// <param name="interfaceType">Interface type to implement.</param>
         /// <param name="typeBuilder">Type builder to emit to.</param>
-        /// <param name="siteCounter">Global counter for site fields used in the thunk type being generated.</param>
         private void ImplementInterface(Type interfaceType, TypeBuilder typeBuilder)
         {
             // Add implements clause.
@@ -273,7 +274,7 @@ namespace GeniusCode.Components.DynamicDuck
 
         #region Method
 
-        private string GetInterfaceImplementerName(MemberInfo memberInfo)
+        private static string GetInterfaceImplementerName(MemberInfo memberInfo)
         {
             return memberInfo.DeclaringType.FullName + "." + memberInfo.Name;
         }
@@ -288,19 +289,19 @@ namespace GeniusCode.Components.DynamicDuck
             string methodName;
             MethodAttributes methodAttributes;
 
-            if (Calculate_ShouldImplementExplicitly(methodInfo))
+            if (CalculateShouldImplementExplicitly(methodInfo))
             {
                 methodName = GetInterfaceImplementerName(methodInfo);
-                methodAttributes = explicitImplementAttributes;
+                methodAttributes = ExplicitImplementAttributes;
             }
             else
             {
                 methodName = methodInfo.Name;
-                methodAttributes = implicitImplementAttributes;
+                methodAttributes = ImplicitImplementAttributes;
             }
 
 
-            MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodName, methodAttributes, CallingConventions.HasThis, methodInfo.ReflectedType, parameterTypes);
+            var methodBuilder = typeBuilder.DefineMethod(methodName, methodAttributes, CallingConventions.HasThis, methodInfo.ReflectedType, parameterTypes);
 
             // if this is a generic method, set generic variables
             if (methodInfo.IsGenericMethod)
@@ -323,7 +324,7 @@ namespace GeniusCode.Components.DynamicDuck
                         a.t2.SetInterfaceConstraints(interfaceConstraints);
 
                     // base type constraints
-                    if (a.t.BaseType != typeof(System.Object))
+                    if (a.t.BaseType != typeof(Object))
                         a.t2.SetBaseTypeConstraint(a.t.BaseType);
 
                 });
@@ -347,7 +348,7 @@ namespace GeniusCode.Components.DynamicDuck
 
         }
 
-        private void EmitMethodParameter(OpCode ldInfoArgArray, ILGenerator g, System.Reflection.ParameterInfo[] parameters, int methodInfoPosition)
+        private void EmitMethodParameter(OpCode ldInfoArgArray, ILGenerator g, ParameterInfo[] parameters, int methodInfoPosition)
         {
             int msilmethodArgPosition = methodInfoPosition + 1;
             g.Emit(ldInfoArgArray);
@@ -364,8 +365,8 @@ namespace GeniusCode.Components.DynamicDuck
         {
 
             // Set Variables: 
-            bool returnsValue = !methodInfo.IsVoidReturnType();
-            Label endOfMthd = g.DefineLabel();
+            var returnsValue = !methodInfo.IsVoidReturnType();
+            var endOfMthd = g.DefineLabel();
             // store opCodes, as we switch depending on if method is void or returns value
             OpCode ldInfoArgArray;
             OpCode stInfoArgArray;
@@ -399,7 +400,7 @@ namespace GeniusCode.Components.DynamicDuck
             // start emitting method body:
             g.Emit(OpCodes.Nop);
             g.Emit(OpCodes.Ldarg_0);
-            g.Emit(OpCodes.Ldstr, _Provider.GetQualifiedName(methodInfo));
+            g.Emit(OpCodes.Ldstr, _provider.GetQualifiedName(methodInfo));
 
 
             if (parameters.Any())
@@ -450,26 +451,26 @@ namespace GeniusCode.Components.DynamicDuck
 
             string eventName;
 
-            if (Calculate_ShouldImplementExplicitly(eventInfo))
+            if (CalculateShouldImplementExplicitly(eventInfo))
             {
                 eventName = GetInterfaceImplementerName(eventInfo);
-                methodAttributes = explicitImplementAttributes;
+                methodAttributes = ExplicitImplementAttributes;
             }
             else
             {
                 eventName = eventInfo.Name;
-                methodAttributes = implicitImplementAttributes;
+                methodAttributes = ImplicitImplementAttributes;
             }
 
             EventBuilder eventBuilder = typeBuilder.DefineEvent(eventName, EventAttributes.None, eventInfo.EventHandlerType);
 
             //ADD
-            MethodBuilder addMethodBuilder = typeBuilder.DefineMethod("add_" + eventName, methodAttributes, CallingConventions.HasThis, typeof(void), new Type[] { eventInfo.EventHandlerType });
+            MethodBuilder addMethodBuilder = typeBuilder.DefineMethod("add_" + eventName, methodAttributes, CallingConventions.HasThis, typeof(void), new[] { eventInfo.EventHandlerType });
             EmitAddHandler(addMethodBuilder.GetILGenerator(), eventInfo, eventName);
             addMethodBuilder.SetImplementationFlags(MethodImplAttributes.IL);
 
             //REMOVE
-            MethodBuilder removeMethodBuilder = typeBuilder.DefineMethod("remove_" + eventName, methodAttributes, CallingConventions.HasThis, typeof(void), new Type[] { eventInfo.EventHandlerType });
+            MethodBuilder removeMethodBuilder = typeBuilder.DefineMethod("remove_" + eventName, methodAttributes, CallingConventions.HasThis, typeof(void), new[] { eventInfo.EventHandlerType });
             EmitRemoveHandler(removeMethodBuilder.GetILGenerator(), eventInfo, eventName);
             removeMethodBuilder.SetImplementationFlags(MethodImplAttributes.IL);
 
@@ -511,15 +512,15 @@ namespace GeniusCode.Components.DynamicDuck
             string propertyName;
             MethodAttributes methodAttributes;
 
-            if (Calculate_ShouldImplementExplicitly(propertyInfo))
+            if (CalculateShouldImplementExplicitly(propertyInfo))
             {
                 propertyName = GetInterfaceImplementerName(propertyInfo);
-                methodAttributes = explicitImplementAttributes;
+                methodAttributes = ExplicitImplementAttributes;
             }
             else
             {
                 propertyName = propertyInfo.Name;
-                methodAttributes = implicitImplementAttributes;
+                methodAttributes = ImplicitImplementAttributes;
             }
 
 
@@ -538,7 +539,7 @@ namespace GeniusCode.Components.DynamicDuck
             }
             if (propertyInfo.CanWrite)
             {
-                MethodBuilder methodBuilder = typeBuilder.DefineMethod("set_" + propertyName, methodAttributes, CallingConventions.HasThis, typeof(void), new Type[] { propertyInfo.PropertyType });
+                MethodBuilder methodBuilder = typeBuilder.DefineMethod("set_" + propertyName, methodAttributes, CallingConventions.HasThis, typeof(void), new[] { propertyInfo.PropertyType });
                 EmitPropertySet(methodBuilder.GetILGenerator(), propertyInfo);
                 propertyBuilder.SetSetMethod(methodBuilder);
                 typeBuilder.DefineMethodOverride(methodBuilder, propertyInfo.GetAccessors().Single(o => o.IsVoidReturnType()));
@@ -551,7 +552,7 @@ namespace GeniusCode.Components.DynamicDuck
         {
             methodILGen.DeclareLocal(propertyInfo.PropertyType);
             methodILGen.Emit(OpCodes.Ldarg_0);
-            methodILGen.Emit(OpCodes.Ldstr, _Provider.GetQualifiedName(propertyInfo));
+            methodILGen.Emit(OpCodes.Ldstr, _provider.GetQualifiedName(propertyInfo));
             // added strongly typed support
             methodILGen.Emit(OpCodes.Call, GetPropertyMethod.MakeGenericMethod(propertyInfo.PropertyType));
             methodILGen.Emit(OpCodes.Stloc_0);
@@ -562,7 +563,7 @@ namespace GeniusCode.Components.DynamicDuck
         private void EmitPropertySet(ILGenerator methodILGen, PropertyInfo propertyInfo)
         {
             methodILGen.Emit(OpCodes.Ldarg_0);
-            methodILGen.Emit(OpCodes.Ldstr, _Provider.GetQualifiedName(propertyInfo));
+            methodILGen.Emit(OpCodes.Ldstr, _provider.GetQualifiedName(propertyInfo));
             methodILGen.Emit(OpCodes.Ldarg_1);
             // added strongly typed support
             methodILGen.Emit(OpCodes.Call, SetPropertyMethod.MakeGenericMethod(propertyInfo.PropertyType));
@@ -587,9 +588,9 @@ namespace GeniusCode.Components.DynamicDuck
         /// |-
         ///    CollectionAssert.AreEquivalent(GetInterfaces(typeof(ISample)), new Type[] { typeof(ISample), typeof(IFoo1), typeof(IFoo2), typeof(IBar) })
         /// </example>
-        private static Type[] GetInterfaces(Type interfaceType)
+        private static IEnumerable<Type> GetInterfaces(Type interfaceType)
         {
-            HashSet<Type> interfaces = new HashSet<Type>();
+            var interfaces = new HashSet<Type>();
 
             //
             // Call helper function to find closure of all interfaces to implement.
@@ -627,6 +628,7 @@ namespace GeniusCode.Components.DynamicDuck
         /// Gets a type builder for a type with the specified <paramref name="thunkTypeName">type name</paramref>.
         /// </summary>
         /// <param name="thunkTypeName">Name of the type to create a type builder for.</param>
+        /// <param name="builder"></param>
         /// <returns>Type builder for the specified <paramref name="thunkTypeName">name</paramref>.</returns>
         private static TypeBuilder GetTypeBuilder(string thunkTypeName, ModuleBuilder builder)
         {

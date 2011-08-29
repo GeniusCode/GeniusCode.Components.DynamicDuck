@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using GeniusCode.Components.DynamicDuck;
+using GeniusCode.Components.DynamicDuck.Support;
 
 namespace GcCore.Tests.Dynamic
 {

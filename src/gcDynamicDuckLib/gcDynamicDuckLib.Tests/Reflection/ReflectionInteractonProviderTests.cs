@@ -1,5 +1,6 @@
 ﻿using GeniusCode.Components.DynamicDuck;
 using GeniusCode.Components.DynamicDuck.Providers;
+using GeniusCode.Components.DynamicDuck.Support;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace gcDynamicDuckLib.Tests
@@ -60,7 +61,7 @@ namespace gcDynamicDuckLib.Tests
         [TestMethod]
         public void TestMethod1()
         {
-            string card = "12312312312312312";
+            var card = "12312312312312312";
 
             var bob = new ClassWithPrivateStuff(card, "Bob");
 

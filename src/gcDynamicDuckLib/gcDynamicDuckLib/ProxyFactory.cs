@@ -1,18 +1,16 @@
 ﻿using System.Collections.Generic;
+using GeniusCode.Components.DynamicDuck;
 using GeniusCode.Components.DynamicDuck.Providers;
+using GeniusCode.Components.DynamicDuck.Support;
 
-namespace GeniusCode.Components.DynamicDuck
+namespace GeniusCode.Components
 {
     public class ProxyFactory
     {
-
-
-
         public static T DuckInterface<T>(object input)
         where T : class
         {
-            IDuckInteractionProvider provider = null;
-            return DuckInterface<T>(input, provider);
+            return DuckInterface<T>(input, null);
         }
 
         public static T DuckInterface<T>(object input, IDuckInteractionProvider provider)

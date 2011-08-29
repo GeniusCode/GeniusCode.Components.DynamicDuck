@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using GcCore.Tests.Dynamic;
+using GeniusCode.Components;
 using GeniusCode.Components.DynamicDuck;
 using GeniusCode.Components.DynamicDuck.Providers;
+using GeniusCode.Components.DynamicDuck.Support;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GeniusCode.Components.DynamicDuck.Providers.LateBinding;
 

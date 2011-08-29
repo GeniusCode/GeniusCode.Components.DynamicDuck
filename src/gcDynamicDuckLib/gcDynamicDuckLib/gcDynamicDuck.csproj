@@ -8,7 +8,7 @@
     <ProjectGuid>{9226391A-332E-49BB-96C3-463DC616E0EE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GeniusCode.Components.DynamicDuck</RootNamespace>
+    <RootNamespace>GeniusCode.Components</RootNamespace>
     <AssemblyName>gcDynamicDuck</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -39,22 +39,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IDynamicInteractionProvider.cs" />
+    <Compile Include="DynamicDuck\MethodCallSiteInfo.cs" />
+    <Compile Include="DynamicDuck\Support\ArgInfo.cs" />
+    <Compile Include="DynamicDuck\Support\DictionaryHelper.cs" />
+    <Compile Include="DynamicDuck\Support\DynamicProxyBase.cs" />
+    <Compile Include="DynamicDuck\Support\Extensions\DictionaryExtensions.cs" />
+    <Compile Include="DynamicDuck\Support\Extensions\ObjectExtensions.cs" />
+    <Compile Include="DynamicDuck\Support\Extensions\ReflectionExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DynamicDuck\Support\Extensions\StringExtensions.cs" />
+    <Compile Include="DynamicDuck\Support\NestedDictionary.cs" />
+    <Compile Include="DynamicDuck\Support\ThunkFactory.cs" />
+    <Compile Include="DynamicDuck\IDynamicInteractionProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\DictionaryInteractionProvider.Shared.cs" />
-    <Compile Include="Providers\DynamicProviderBase.Shared.cs" />
+    <Compile Include="DynamicDuck\Providers\DictionaryInteractionProvider.Shared.cs" />
+    <Compile Include="DynamicDuck\Providers\DynamicProviderBase.Shared.cs" />
     <Compile Include="ProxyFactory.cs" />
-    <Compile Include="Support\ArgInfo.cs" />
-    <Compile Include="IArgInfo.cs" />
-    <Compile Include="Support\DictionaryHelper.cs" />
-    <Compile Include="Support\DynamicProxyBase.cs" />
-    <Compile Include="Support\Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Support\Extensions\ObjectExtensions.cs" />
-    <Compile Include="IDynamicProxy.cs" />
-    <Compile Include="Support\Extensions\StringExtensions.cs" />
-    <Compile Include="Support\NestedDictionary.cs" />
-    <Compile Include="Support\ThunkFactory.cs" />
-    <Compile Include="Support\Extensions\ReflectionExtensions.cs" />
+    <Compile Include="DynamicDuck\IArgInfo.cs" />
+    <Compile Include="DynamicDuck\IDynamicProxy.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

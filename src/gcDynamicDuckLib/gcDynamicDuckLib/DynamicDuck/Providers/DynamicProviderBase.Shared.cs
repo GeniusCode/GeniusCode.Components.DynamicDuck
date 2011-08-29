@@ -5,7 +5,7 @@ namespace GeniusCode.Components.DynamicDuck.Providers
 {
     public abstract class DynamicProviderBase : IDynamicInteractionProvider
     {
-        public DynamicProviderBase()
+        protected DynamicProviderBase()
         {
             CachePoints = true;
         }
@@ -14,18 +14,18 @@ namespace GeniusCode.Components.DynamicDuck.Providers
 
         void IDynamicInteractionProvider.OnObjectWrapped<T>(T target)
         {
-            this.OnObjectWrapped<T>(target);
+            OnObjectWrapped(target);
         }
 
         bool IDynamicInteractionProvider.CachePoints
         {
             get
             {
-                return this.CachePoints;
+                return CachePoints;
             }
             set
             {
-                this.CachePoints = value;
+                CachePoints = value;
             }
         }
 
@@ -40,18 +40,18 @@ namespace GeniusCode.Components.DynamicDuck.Providers
 
         void IDynamicInteractionProvider.SetDefaultValue<T>(T value, object target, string propertyName)
         {
-            if (Calculate_ShouldSetDefaultValue<T>(value, target, propertyName))
-                PerformPropertySet<T>(target, propertyName, value);
+            if (CalculateShouldSetDefaultValue(value, target, propertyName))
+                PerformPropertySet(target, propertyName, value);
         }
 
         void IDynamicInteractionProvider.AddHandler(object target, string eventName, Delegate handler, Type delegateType)
         {
-            this.AddHandler(target, eventName, handler, delegateType);
+            AddHandler(target, eventName, handler, delegateType);
         }
 
         void IDynamicInteractionProvider.RemoveHandler(object target, string eventName, Delegate handler, Type delegateType)
         {
-            this.RemoveHandler(target, eventName, handler, delegateType);
+            RemoveHandler(target, eventName, handler, delegateType);
         }
 
         void IDynamicInteractionProvider.InvokeVoidMethod(MethodCallSiteInfo info)
@@ -103,7 +103,7 @@ namespace GeniusCode.Components.DynamicDuck.Providers
             return member.Name;
         }
 
-        protected virtual bool Calculate_ShouldSetDefaultValue<T>(T value, object target, string propertyName)
+        protected virtual bool CalculateShouldSetDefaultValue<T>(T value, object target, string propertyName)
         {
             return true;
         }

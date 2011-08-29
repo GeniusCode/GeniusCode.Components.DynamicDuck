@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Fasterflect;
+using System.Reflection;
 
 namespace GeniusCode.Components.DynamicDuck.Providers
 {
@@ -10,6 +10,7 @@ namespace GeniusCode.Components.DynamicDuck.Providers
     /// </summary>
     public class ReflectionInteractionProvider : DynamicProviderBase, IDuckInteractionProvider
     {
+        private const BindingFlags _BindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
 
         protected override void RemoveHandler(object target, string name, Delegate handler, Type delegateType)
         {
@@ -23,19 +24,24 @@ namespace GeniusCode.Components.DynamicDuck.Providers
             throw new NotImplementedException();
         }
 
+
+
+        private static PropertyInfo GetPropertyInfo(string propertyName, object target)
+        {
+            var type = target.GetType();
+            return type.GetProperty(propertyName, _BindingFlags);
+        }
+
         protected override T PerformPropertyGet<T>(object target, string propertyName)
         {
-            var _TypeToUse = target.GetType();
-
-            var getter = _TypeToUse.DelegateForGetPropertyValue(propertyName, Flags.Public | Flags.Instance | Flags.NonPublic);
-            return (T)getter.Invoke(target);
+            var propertyInfo = GetPropertyInfo(propertyName, target);
+            var value = (T)propertyInfo.GetValue(target, null);
+            return value;
         }
         protected override void PerformPropertySet<T>(object target, string propertyName, T value)
         {
-            var _TypeToUse = target.GetType();
-            
-            var setter = _TypeToUse.DelegateForSetPropertyValue(propertyName, Flags.Public | Flags.Instance | Flags.NonPublic);
-            setter.Invoke(target, value);
+            var propertyInfo = GetPropertyInfo(propertyName, target);
+            propertyInfo.SetValue(target, value, null);
         }
 
         protected override void InvokeVoidMethod(MethodCallSiteInfo info)
@@ -45,19 +51,18 @@ namespace GeniusCode.Components.DynamicDuck.Providers
 
         protected override T InvokeReturnMethod<T>(MethodCallSiteInfo info)
         {
-            var _TypeToUse = info.Target.GetType();
+            var typeToUse = info.Target.GetType();
 
 
-            var types = from t in info.Args
-                        select t.ArguementType;
+            var types = (from t in info.Args
+                         select t.ArguementType).ToArray();
 
-            var d = _TypeToUse.DelegateForCallMethod(info.MethodName, types.ToArray());
+            var mi = typeToUse.GetMethod(info.MethodName, _BindingFlags, null, CallingConventions.HasThis, types, null);
 
+            var values = (from t in info.Args
+                          select t.ArguementValue).ToArray();
 
-            var values = from t in info.Args
-                         select t.ArguementValue;
-
-            return (T)d.Invoke(info.Target, values.ToArray());
+            return (T)mi.Invoke(info.Target, values);
         }
     }
 }

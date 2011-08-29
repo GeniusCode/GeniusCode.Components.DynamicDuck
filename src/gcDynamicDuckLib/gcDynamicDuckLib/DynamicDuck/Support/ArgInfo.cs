@@ -23,12 +23,12 @@ namespace GeniusCode.Components.DynamicDuck.Support
 
         string IArgInfo.ArguementName
         {
-            get { return this.ArguementName; }
+            get { return ArguementName; }
         }
 
         object IArgInfo.ArguementValue
         {
-            get { return this.ArguementValue; }
+            get { return ArguementValue; }
         }
     }
 }
